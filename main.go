@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	dbyml := make(map[string]interface{})
+	dbyml := make(map[interface{}]interface{})
 	fpath, err := filepath.Abs("./config/database.yml")
 	if err != nil {
 		log.Fatal(err)
@@ -22,12 +22,13 @@ func main() {
 		log.Fatal(err)
 	}
 	yaml.Unmarshal(file, &dbyml)
-	fmt.Println(dbyml["test"].(map[interface{}]interface{})["host"])
+	envConfigs := dbyml["test"].(map[interface{}]interface{})
 	app := cli.NewApp()
 	app.Name = "greet"
 	app.Usage = "Fight the loneliness!"
 	app.Action = func(c *cli.Context) error {
 		fmt.Println("Hello friend!")
+		fmt.Printf("Test database is running on %s:%d\n", envConfigs["host"], envConfigs["port"])
 		return nil
 	}
 	app.Run(os.Args)
