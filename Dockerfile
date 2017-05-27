@@ -13,4 +13,4 @@ ADD ./ ./
 
 ENV PATH "$PATH:/go/bin"
 
-RUN go install
+RUN go build -o /go/bin/dynamornr

@@ -1,10 +1,12 @@
-image:
+run:
 	docker build \
 	-t dynamornr \
-	.
-run:
+	. \
+	&& \
 	docker run \
+	-v $(shell pwd):/go/src/github.com/nycdavid/dynamornr \
 	-it \
 	--rm \
 	dynamornr \
-	dynamornr
+	/bin/ash \
+	-c "cd test && dynamornr"
