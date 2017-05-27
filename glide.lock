@@ -1,6 +1,12 @@
-hash: 9389991584f79448fe96ee711eaaa487679b5bee966e94c5bb42585f901927c9
-updated: 2017-05-27T08:18:37.970662396-04:00
+hash: b6a78fb1360aad5fe9cb14d50121de9e0382badf319316044553e96726c37a71
+updated: 2017-05-27T09:47:45.811432391-04:00
 imports:
+- name: github.com/aws/aws-sdk-go
+  version: e0cdae7a65ba3a5e66a0af747a7b3967ddac099c
+  subpackages:
+  - aws
+  - aws/session
+  - service/dynamodb
 - name: github.com/urfave/cli
   version: 0bdeddeeb0f650497d603c4ad7b20cfe685682f6
 - name: gopkg.in/yaml.v2
