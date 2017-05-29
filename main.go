@@ -10,11 +10,22 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/nycdavid/dynamornr/tables"
 	"github.com/urfave/cli"
 	"gopkg.in/yaml.v2"
 )
 
+var sess *dynamodb.DynamoDB
+
 func main() {
+	app := cli.NewApp()
+	app.Commands = []cli.Command{
+		{
+			Name:   "tables:list",
+			Usage:  "List all tables in DynamoDB.",
+			Action: ListTables,
+		},
+	}
 	dbyml := make(map[interface{}]interface{})
 	fpath, err := filepath.Abs("./config/database.yml")
 	if err != nil {
@@ -28,19 +39,21 @@ func main() {
 	yaml.Unmarshal(file, &dbyml)
 	envConfigs := dbyml[env].(map[interface{}]interface{})
 	dbUrl := fmt.Sprintf("%s:%v", envConfigs["host"], envConfigs["port"])
-	_, err = connectTo(dbUrl)
+	sess, err = connectTo(dbUrl)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	app := cli.NewApp()
-	app.Name = "greet"
-	app.Usage = "Fight the loneliness!"
-	app.Action = func(c *cli.Context) error {
-		fmt.Printf("Connected to database on %s:%d...\n", envConfigs["host"], envConfigs["port"])
-		return nil
-	}
+	cli.AppHelpTemplate = `INFO:
+  Repo: https://www.github.com/nycdavid/dynamornr
+  Author: David Ko
+  `
 	app.Run(os.Args)
+}
+
+func ListTables(ctx *cli.Context) {
+	fmt.Println("Table Listing:")
+	tables.All(sess)
 }
 
 func connectTo(url string) (*dynamodb.DynamoDB, error) {
@@ -50,15 +63,8 @@ func connectTo(url string) (*dynamodb.DynamoDB, error) {
 	})
 	if err != nil {
 		log.Fatal(err)
-	}
-	sess := dynamodb.New(awsSession)
-	params := &dynamodb.ListTablesInput{
-		ExclusiveStartTableName: aws.String("users"),
-		Limit: aws.Int64(100),
-	}
-	_, err = sess.ListTables(params)
-	if err != nil {
 		return &dynamodb.DynamoDB{}, err
 	}
+	sess = dynamodb.New(awsSession)
 	return sess, nil
 }

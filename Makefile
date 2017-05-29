@@ -15,7 +15,7 @@ run:
 	--network=dynamornr-test \
 	dynamornr \
 	/bin/ash \
-	-c "cd test && dynamornr"
+	-c "cd test && dynamornr tables:list"
 dynamo:
 	docker run \
 	-it \
