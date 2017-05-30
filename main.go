@@ -25,6 +25,11 @@ func main() {
 			Usage:  "List all tables in DynamoDB.",
 			Action: ListTables,
 		},
+		{
+			Name:   "tables:create",
+			Usage:  "Create a table in DynamoDB.",
+			Action: CreateTable,
+		},
 	}
 	dbyml := make(map[interface{}]interface{})
 	fpath, err := filepath.Abs("./config/database.yml")
@@ -52,8 +57,11 @@ func main() {
 }
 
 func ListTables(ctx *cli.Context) {
-	fmt.Println("Table Listing:")
 	tables.All(sess)
+}
+
+func CreateTable(ctx *cli.Context) {
+	tables.Create(sess)
 }
 
 func connectTo(url string) (*dynamodb.DynamoDB, error) {
