@@ -1,9 +1,9 @@
 tables:
   users:
     attribute_definitions:
-      Id: N
+      Id: "N"
     key_schema:
-      Id: HASH
+      Id: "HASH"
     provisioned_throughput:
       read_capacity_units: 10
       write_capacity_units: 5

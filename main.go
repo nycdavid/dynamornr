@@ -22,12 +22,12 @@ func main() {
 	app.Commands = []cli.Command{
 		{
 			Name:   "tables:list",
-			Usage:  "List all tables in DynamoDB.",
+			Usage:  "List all tables.",
 			Action: ListTables,
 		},
 		{
 			Name:   "tables:create",
-			Usage:  "Create a table in DynamoDB.",
+			Usage:  "Create a table.",
 			Action: CreateTable,
 		},
 	}

@@ -2,11 +2,14 @@ package tables
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"gopkg.in/yaml.v2"
 )
 
 func All(ddbSess *dynamodb.DynamoDB) {
@@ -22,6 +25,7 @@ func All(ddbSess *dynamodb.DynamoDB) {
 }
 
 func Create(ddbSess *dynamodb.DynamoDB) {
+	schemaYaml()
 	params := &dynamodb.CreateTableInput{
 		TableName: aws.String(os.Getenv("TABLENAME")),
 		ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
@@ -43,12 +47,23 @@ func Create(ddbSess *dynamodb.DynamoDB) {
 	}
 	cto, err := ddbSess.CreateTable(params)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println("The error is:")
+		fmt.Println(err.Error())
 	}
 	fmt.Printf("Creating Table: %s \n\n", os.Getenv("TABLENAME"))
 	fmt.Println(cto)
 }
 
 func schemaYaml() {
-	filepath := os.Getenv("SCHEMA_FILE_PATH")
+	fpath, err := filepath.Abs("./config/schema.yml")
+	if err != nil {
+		log.Fatal(err)
+	}
+	schema := make(map[interface{}]interface{})
+	fileContent, err := ioutil.ReadFile(fpath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	yaml.Unmarshal(fileContent, &schema)
+	fmt.Println(schema)
 }

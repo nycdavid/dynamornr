@@ -1,3 +1,5 @@
+.PHONY: all tables clean
+	
 compile:
 	docker build \
 	-t dynamornr \
