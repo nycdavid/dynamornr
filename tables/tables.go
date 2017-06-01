@@ -25,7 +25,8 @@ func All(ddbSess *dynamodb.DynamoDB) {
 }
 
 func Create(ddbSess *dynamodb.DynamoDB) {
-	schemaYaml()
+	schema := make(map[interface{}]interface{})
+	unmarshalSchemaTo(schema)
 	params := &dynamodb.CreateTableInput{
 		TableName: aws.String(os.Getenv("TABLENAME")),
 		ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
@@ -45,6 +46,14 @@ func Create(ddbSess *dynamodb.DynamoDB) {
 			},
 		},
 	}
+	f := schema["tables"]
+	conv := f.(map[interface{}]interface{})
+	fmt.Println("Iterating through keys...")
+	for k, v := range conv {
+		fmt.Println(k)
+		fmt.Println(v)
+	}
+
 	cto, err := ddbSess.CreateTable(params)
 	if err != nil {
 		fmt.Println("The error is:")
@@ -54,16 +63,14 @@ func Create(ddbSess *dynamodb.DynamoDB) {
 	fmt.Println(cto)
 }
 
-func schemaYaml() {
+func unmarshalSchemaTo(v map[interface{}]interface{}) {
 	fpath, err := filepath.Abs("./config/schema.yml")
 	if err != nil {
 		log.Fatal(err)
 	}
-	schema := make(map[interface{}]interface{})
 	fileContent, err := ioutil.ReadFile(fpath)
 	if err != nil {
 		log.Fatal(err)
 	}
-	yaml.Unmarshal(fileContent, &schema)
-	fmt.Println(schema)
+	yaml.Unmarshal(fileContent, &v)
 }
