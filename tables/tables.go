@@ -24,9 +24,27 @@ func All(ddbSess *dynamodb.DynamoDB) {
 	fmt.Println(lto)
 }
 
+type Schema struct {
+	Tables []TblMetadata `yaml:"tables"`
+}
+
+type TblMetadata struct {
+	Name                string `yaml:"name"`
+	AttributeDefintions struct {
+		Id string `yaml:"Id"`
+	} `yaml:"attribute_definitions"`
+	KeySchema struct {
+		Id string `yaml:"Id"`
+	} `yaml:"key_schema"`
+	ProvisionedThroughput struct {
+		ReadCapUnits  int `yaml:"read_capacity_units"`
+		WriteCapUnits int `yaml:"write_capacity_units"`
+	} `yaml:"provisioned_throughput"`
+}
+
 func Create(ddbSess *dynamodb.DynamoDB) {
-	schema := make(map[interface{}]interface{})
-	unmarshalSchemaTo(schema)
+	schema := Schema{}
+	unmarshalSchemaTo(&schema)
 	params := &dynamodb.CreateTableInput{
 		TableName: aws.String(os.Getenv("TABLENAME")),
 		ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
@@ -46,12 +64,9 @@ func Create(ddbSess *dynamodb.DynamoDB) {
 			},
 		},
 	}
-	f := schema["tables"]
-	conv := f.(map[interface{}]interface{})
-	fmt.Println("Iterating through keys...")
-	for k, v := range conv {
-		fmt.Println(k)
-		fmt.Println(v)
+	fmt.Println(schema)
+	for k, v := range schema.Tables {
+		// createTable(k, v)
 	}
 
 	cto, err := ddbSess.CreateTable(params)
@@ -63,7 +78,7 @@ func Create(ddbSess *dynamodb.DynamoDB) {
 	fmt.Println(cto)
 }
 
-func unmarshalSchemaTo(v map[interface{}]interface{}) {
+func unmarshalSchemaTo(schema *Schema) {
 	fpath, err := filepath.Abs("./config/schema.yml")
 	if err != nil {
 		log.Fatal(err)
@@ -72,5 +87,15 @@ func unmarshalSchemaTo(v map[interface{}]interface{}) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	yaml.Unmarshal(fileContent, &v)
+	err = yaml.Unmarshal(fileContent, &schema)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func createTable(name interface{}, metadata interface{}) {
+	params := &dynamodb.CreateTableInput{
+		TableName: aws.String(name.(string)),
+	}
+	fmt.Println(params)
 }
