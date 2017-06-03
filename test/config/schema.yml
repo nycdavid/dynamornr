@@ -2,8 +2,10 @@ tables:
   - name: "users"
     attribute_definitions:
       Id: "N"
+      Foo: "S"
     key_schema:
       Id: "HASH"
+      Foo: "RANGE"
     provisioned_throughput:
       read_capacity_units: 10
       write_capacity_units: 5

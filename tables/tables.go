@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"os"
 	"path/filepath"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -29,53 +28,27 @@ type Schema struct {
 }
 
 type TblMetadata struct {
-	Name                string `yaml:"name"`
-	AttributeDefintions struct {
-		Id string `yaml:"Id"`
-	} `yaml:"attribute_definitions"`
-	KeySchema struct {
-		Id string `yaml:"Id"`
-	} `yaml:"key_schema"`
+	Name                  string            `yaml:"name"`
+	AttributeDefinitions  map[string]string `yaml:"attribute_definitions"`
+	KeySchema             map[string]string `yaml:"key_schema"`
 	ProvisionedThroughput struct {
-		ReadCapUnits  int `yaml:"read_capacity_units"`
-		WriteCapUnits int `yaml:"write_capacity_units"`
+		ReadCapUnits  int64 `yaml:"read_capacity_units"`
+		WriteCapUnits int64 `yaml:"write_capacity_units"`
 	} `yaml:"provisioned_throughput"`
 }
 
 func Create(ddbSess *dynamodb.DynamoDB) {
 	schema := Schema{}
 	unmarshalSchemaTo(&schema)
-	params := &dynamodb.CreateTableInput{
-		TableName: aws.String(os.Getenv("TABLENAME")),
-		ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
-			ReadCapacityUnits:  aws.Int64(10),
-			WriteCapacityUnits: aws.Int64(5),
-		},
-		AttributeDefinitions: []*dynamodb.AttributeDefinition{
-			{
-				AttributeName: aws.String("Id"),
-				AttributeType: aws.String("N"),
-			},
-		},
-		KeySchema: []*dynamodb.KeySchemaElement{
-			{
-				AttributeName: aws.String("Id"),
-				KeyType:       aws.String("HASH"),
-			},
-		},
+	for _, table := range schema.Tables {
+		createTableInput := constructCti(table)
+		cto, err := ddbSess.CreateTable(createTableInput)
+		if err != nil {
+			fmt.Println("The error is:")
+			fmt.Println(err.Error())
+		}
+		fmt.Println(cto)
 	}
-	fmt.Println(schema)
-	for k, v := range schema.Tables {
-		// createTable(k, v)
-	}
-
-	cto, err := ddbSess.CreateTable(params)
-	if err != nil {
-		fmt.Println("The error is:")
-		fmt.Println(err.Error())
-	}
-	fmt.Printf("Creating Table: %s \n\n", os.Getenv("TABLENAME"))
-	fmt.Println(cto)
 }
 
 func unmarshalSchemaTo(schema *Schema) {
@@ -93,9 +66,36 @@ func unmarshalSchemaTo(schema *Schema) {
 	}
 }
 
-func createTable(name interface{}, metadata interface{}) {
-	params := &dynamodb.CreateTableInput{
-		TableName: aws.String(name.(string)),
+func constructCti(table TblMetadata) *dynamodb.CreateTableInput {
+	return &dynamodb.CreateTableInput{
+		TableName: aws.String(table.Name),
+		ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
+			ReadCapacityUnits:  aws.Int64(table.ProvisionedThroughput.ReadCapUnits),
+			WriteCapacityUnits: aws.Int64(table.ProvisionedThroughput.WriteCapUnits),
+		},
+		AttributeDefinitions: mapAttrDefinitions(table.AttributeDefinitions),
+		KeySchema:            mapKeySchema(table.KeySchema),
 	}
-	fmt.Println(params)
+}
+
+func mapAttrDefinitions(schemaDefs map[string]string) []*dynamodb.AttributeDefinition {
+	var attrDefs []*dynamodb.AttributeDefinition
+	for field, typ := range schemaDefs {
+		attrDefs = append(attrDefs, &dynamodb.AttributeDefinition{
+			AttributeName: aws.String(field),
+			AttributeType: aws.String(typ),
+		})
+	}
+	return attrDefs
+}
+
+func mapKeySchema(schemaDefs map[string]string) []*dynamodb.KeySchemaElement {
+	var attrDefs []*dynamodb.KeySchemaElement
+	for field, typ := range schemaDefs {
+		attrDefs = append(attrDefs, &dynamodb.KeySchemaElement{
+			AttributeName: aws.String(field),
+			KeyType:       aws.String(typ),
+		})
+	}
+	return attrDefs
 }
