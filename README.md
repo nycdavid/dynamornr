@@ -3,9 +3,9 @@ Dynamornr is a CLI-based task runner for DynamoDB (written in Go).
 
 It leverages the Golang aws-sdk-go library in order to execute it's tasks and was born out of my frustration with interfacing with DynamoDB directly.
 
-Currently it's able to:
-* List the current tables in the running DynamoDB database. `dynamornr tables:list`
-* Create tables (according to a `schema.yml` file). `dynamornr tables:create`
+## Commands:
+* `dynamornr tables:list` List the current tables in the running DynamoDB database.
+* `dynamornr tables:create` Create tables (according to a `schema.yml` file).
 
 ## Configuration Files
 There are 2 main configuration Yaml files that Dynamornr looks for:
