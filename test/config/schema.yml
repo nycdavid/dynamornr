@@ -2,16 +2,6 @@ tables:
   - name: "users"
     attribute_definitions:
       Id: "N"
-      Foo: "S"
-    key_schema:
-      Id: "HASH"
-      Foo: "RANGE"
-    provisioned_throughput:
-      read_capacity_units: 10
-      write_capacity_units: 5
-  - name: "airplanes"
-    attribute_definitions:
-      Id: "N"
     key_schema:
       Id: "HASH"
     provisioned_throughput:
