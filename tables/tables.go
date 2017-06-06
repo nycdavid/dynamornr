@@ -27,14 +27,24 @@ type Schema struct {
 	Tables []TblMetadata `yaml:"tables"`
 }
 
+type ProvisionedThroughput struct {
+	ReadCapUnits  int64 `yaml:"read_capacity_units"`
+	WriteCapUnits int64 `yaml:"write_capacity_units"`
+}
+
+type GlobalSecIdx struct {
+	Name                  string                `yaml:"name"`
+	KeySchema             map[string]string     `yaml:"key_schema"`
+	Projection            map[string]string     `yaml:"projection"`
+	ProvisionedThroughput ProvisionedThroughput `yaml:"provisioned_throughput"`
+}
+
 type TblMetadata struct {
-	Name                  string            `yaml:"name"`
-	AttributeDefinitions  map[string]string `yaml:"attribute_definitions"`
-	KeySchema             map[string]string `yaml:"key_schema"`
-	ProvisionedThroughput struct {
-		ReadCapUnits  int64 `yaml:"read_capacity_units"`
-		WriteCapUnits int64 `yaml:"write_capacity_units"`
-	} `yaml:"provisioned_throughput"`
+	Name                  string                `yaml:"name"`
+	AttributeDefinitions  map[string]string     `yaml:"attribute_definitions"`
+	KeySchema             map[string]string     `yaml:"key_schema"`
+	GSIs                  []GlobalSecIdx        `yaml:"global_secondary_indexes"`
+	ProvisionedThroughput ProvisionedThroughput `yaml:provisioned_throughput"`
 }
 
 func Create(ddbSess *dynamodb.DynamoDB) {
@@ -68,13 +78,18 @@ func unmarshalSchemaTo(schema *Schema) {
 
 func constructCti(table TblMetadata) *dynamodb.CreateTableInput {
 	return &dynamodb.CreateTableInput{
-		TableName: aws.String(table.Name),
-		ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
-			ReadCapacityUnits:  aws.Int64(table.ProvisionedThroughput.ReadCapUnits),
-			WriteCapacityUnits: aws.Int64(table.ProvisionedThroughput.WriteCapUnits),
-		},
-		AttributeDefinitions: mapAttrDefinitions(table.AttributeDefinitions),
-		KeySchema:            mapKeySchema(table.KeySchema),
+		TableName:              aws.String(table.Name),
+		ProvisionedThroughput:  mapProvisionedThroughput(table.ProvisionedThroughPut),
+		AttributeDefinitions:   mapAttrDefinitions(table.AttributeDefinitions),
+		KeySchema:              mapKeySchema(table.KeySchema),
+		GlobalSecondaryIndexes: mapGsi(table.GSIs),
+	}
+}
+
+func mapProvisionedThroughput(pt ProvisionedThroughput) *dynamodb.ProvisionedThroughput {
+	return &dynamodb.ProvisionedThroughput{
+		ReadCapacityUnits:  aws.Int64(pt.ReadCapUnits),
+		WriteCapacityUnits: aws.Int64(pt.WriteCapUnits),
 	}
 }
 
@@ -98,4 +113,16 @@ func mapKeySchema(schemaDefs map[string]string) []*dynamodb.KeySchemaElement {
 		})
 	}
 	return attrDefs
+}
+
+func mapGsi(indexDefs []GlobalSecIdx) []*dynamodb.GlobalSecondaryIndex {
+	var gsis []*dynamodb.GlobalSecondaryIndex
+	for _, gsIdx := range indexDefs {
+		gsis = append(attrDefs, &dynamodb.GlobalSecondaryIndex{
+			IndexName:             aws.String(gsIdx.Name),
+			KeySchema:             mapKeySchema(gsIdx.KeySchema),
+			Projection:            &dynamodb.Projection{}, // TODO
+			ProvisionedThroughput: mapProvisionedThroughput(gsIdx.ProvisionedThroughput),
+		})
+	}
 }

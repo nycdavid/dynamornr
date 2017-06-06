@@ -7,3 +7,11 @@ tables:
     provisioned_throughput:
       read_capacity_units: 10
       write_capacity_units: 5
+    global_secondary_indexes:
+      - name: "email"
+        key_schema:
+          Email: "RANGE"
+        projection:
+        provisioned_throughput:
+          read_capacity_units: 10
+          write_capacity_units: 5
