@@ -33,10 +33,10 @@ type ProvisionedThroughput struct {
 }
 
 type GlobalSecIdx struct {
-	Name                  string                `yaml:"name"`
-	KeySchema             map[string]string     `yaml:"key_schema"`
-	Projection            map[string]string     `yaml:"projection"`
-	ProvisionedThroughput ProvisionedThroughput `yaml:"provisioned_throughput"`
+	Name                  string                 `yaml:"name"`
+	KeySchema             map[string]string      `yaml:"key_schema"`
+	Projection            map[string]interface{} `yaml:"projection"`
+	ProvisionedThroughput ProvisionedThroughput  `yaml:"provisioned_throughput"`
 }
 
 type TblMetadata struct {
@@ -44,7 +44,7 @@ type TblMetadata struct {
 	AttributeDefinitions  map[string]string     `yaml:"attribute_definitions"`
 	KeySchema             map[string]string     `yaml:"key_schema"`
 	GSIs                  []GlobalSecIdx        `yaml:"global_secondary_indexes"`
-	ProvisionedThroughput ProvisionedThroughput `yaml:provisioned_throughput"`
+	ProvisionedThroughput ProvisionedThroughput `yaml:"provisioned_throughput"`
 }
 
 func Create(ddbSess *dynamodb.DynamoDB) {
@@ -54,8 +54,8 @@ func Create(ddbSess *dynamodb.DynamoDB) {
 		createTableInput := constructCti(table)
 		cto, err := ddbSess.CreateTable(createTableInput)
 		if err != nil {
-			fmt.Println("The error is:")
-			fmt.Println(err.Error())
+			stdout := fmt.Sprintf("ERROR: %s", err.Error())
+			fmt.Println(stdout)
 		}
 		fmt.Println(cto)
 	}
@@ -79,7 +79,7 @@ func unmarshalSchemaTo(schema *Schema) {
 func constructCti(table TblMetadata) *dynamodb.CreateTableInput {
 	return &dynamodb.CreateTableInput{
 		TableName:              aws.String(table.Name),
-		ProvisionedThroughput:  mapProvisionedThroughput(table.ProvisionedThroughPut),
+		ProvisionedThroughput:  mapProvisionedThroughput(table.ProvisionedThroughput),
 		AttributeDefinitions:   mapAttrDefinitions(table.AttributeDefinitions),
 		KeySchema:              mapKeySchema(table.KeySchema),
 		GlobalSecondaryIndexes: mapGsi(table.GSIs),
@@ -118,11 +118,23 @@ func mapKeySchema(schemaDefs map[string]string) []*dynamodb.KeySchemaElement {
 func mapGsi(indexDefs []GlobalSecIdx) []*dynamodb.GlobalSecondaryIndex {
 	var gsis []*dynamodb.GlobalSecondaryIndex
 	for _, gsIdx := range indexDefs {
-		gsis = append(attrDefs, &dynamodb.GlobalSecondaryIndex{
+		gsis = append(gsis, &dynamodb.GlobalSecondaryIndex{
 			IndexName:             aws.String(gsIdx.Name),
 			KeySchema:             mapKeySchema(gsIdx.KeySchema),
-			Projection:            &dynamodb.Projection{}, // TODO
+			Projection:            mapProjection(gsIdx.Projection),
 			ProvisionedThroughput: mapProvisionedThroughput(gsIdx.ProvisionedThroughput),
 		})
+	}
+	return gsis
+}
+
+func mapProjection(proj map[string]interface{}) *dynamodb.Projection {
+	var nkAttrs []*string
+	for _, attr := range proj["non_key_attributes"].([]interface{}) {
+		nkAttrs = append(nkAttrs, aws.String(attr.(string)))
+	}
+	return &dynamodb.Projection{
+		NonKeyAttributes: nkAttrs,
+		ProjectionType:   aws.String(proj["projection_type"].(string)),
 	}
 }

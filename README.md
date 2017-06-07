@@ -17,15 +17,4 @@ There are 2 main configuration Yaml files that Dynamornr looks for:
         host: http://some.fake.host
     ```
 * `config/schema.yml`: This file outlines the tables that should be created, their key schema/attribute definitions and their provisioned throughput.
-  * An example file looks like this:
-    ```yaml
-      tables:
-        - name: "users"
-          attribute_definitions:
-            Id: "N"
-          key_schema:
-            Id: "HASH"
-          provisioned_throughput:
-            read_capacity_units: 10
-            write_capacity_units: 5
-    ```
+* For supported features in DynamoDB, take a look at our [example schema.yml file](https://github.com/nycdavid/dynamornr/blob/master/test/config/schema.yml)

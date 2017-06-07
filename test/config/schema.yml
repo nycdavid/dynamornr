@@ -1,7 +1,8 @@
 tables:
   - name: "users"
     attribute_definitions:
-      Id: "N"
+      Id: "S"
+      Email: "S"
     key_schema:
       Id: "HASH"
     provisioned_throughput:
@@ -10,8 +11,11 @@ tables:
     global_secondary_indexes:
       - name: "email"
         key_schema:
-          Email: "RANGE"
+          Email: "HASH"
         projection:
+          projection_type: "INCLUDE"
+          non_key_attributes:
+            - "Email"
         provisioned_throughput:
           read_capacity_units: 10
           write_capacity_units: 5
