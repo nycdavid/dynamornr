@@ -54,3 +54,17 @@ list-items:
 	dynamornr \
 	/bin/ash \
 	-c "cd test && dynamornr items:list users"
+seed:
+	make compile \
+	&& docker run \
+	-v $(shell pwd):/go/src/github.com/nycdavid/dynamornr \
+	-e ENV=test \
+	-e AWS_SECRET_ACCESS_KEY=secretaccesskey \
+	-e AWS_ACCESS_KEY_ID=accesskeyid \
+	-e AWS_DEFAULT_REGION=us-east-1 \
+	-it \
+	--rm \
+	--network=dynamornr-test \
+	dynamornr \
+	/bin/ash \
+	-c "cd test && dynamornr items:seed"

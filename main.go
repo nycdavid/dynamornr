@@ -36,6 +36,11 @@ func main() {
 			Usage:  "List all items in a given table.",
 			Action: ListItems,
 		},
+		{
+			Name:   "items:seed",
+			Usage:  "Seeds items into DynamoDB.",
+			Action: SeedItems,
+		},
 	}
 	dbyml := make(map[interface{}]interface{})
 	fpath, err := filepath.Abs("./config/database.yml")
@@ -72,6 +77,10 @@ func CreateTable(ctx *cli.Context) {
 
 func ListItems(ctx *cli.Context) {
 	items.List(sess, ctx)
+}
+
+func SeedItems(ctx *cli.Context) {
+	items.Seed(sess, ctx)
 }
 
 func connectTo(url string) (*dynamodb.DynamoDB, error) {
