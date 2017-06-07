@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/nycdavid/dynamornr/items"
 	"github.com/nycdavid/dynamornr/tables"
 	"github.com/urfave/cli"
 	"gopkg.in/yaml.v2"
@@ -29,6 +30,11 @@ func main() {
 			Name:   "tables:create",
 			Usage:  "Create a table.",
 			Action: CreateTable,
+		},
+		{
+			Name:   "items:list",
+			Usage:  "List all items in a given table.",
+			Action: ListItems,
 		},
 	}
 	dbyml := make(map[interface{}]interface{})
@@ -62,6 +68,10 @@ func ListTables(ctx *cli.Context) {
 
 func CreateTable(ctx *cli.Context) {
 	tables.Create(sess)
+}
+
+func ListItems(ctx *cli.Context) {
+	items.List(sess, ctx)
 }
 
 func connectTo(url string) (*dynamodb.DynamoDB, error) {
