@@ -41,6 +41,9 @@ func Seed(ddbSess *dynamodb.DynamoDB, ctx *cli.Context) {
 		log.Fatal(err.Error())
 	}
 	var sf SeedFile
-	json.NewDecoder(fileContent).Decode(&sf)
-	fmt.Println(sf.Tables)
+	json.NewDecoder(fileContent).Decode(&sf.Tables)
+	for k, v := range sf.Tables.(map[string]interface{}) {
+		fmt.Println(k)
+		fmt.Println(v)
+	}
 }
