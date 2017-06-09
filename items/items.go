@@ -42,8 +42,12 @@ func Seed(ddbSess *dynamodb.DynamoDB, ctx *cli.Context) {
 	}
 	var sf SeedFile
 	json.NewDecoder(fileContent).Decode(&sf.Tables)
-	for k, v := range sf.Tables.(map[string]interface{}) {
-		fmt.Println(k)
-		fmt.Println(v)
+	input := constructBatchWriteInput(sf.Tables)
+	ddbSess.BatchWriteItem(input)
+}
+
+func constructBatchWriteInput(tables interface{}) {
+  var itemInputs 
+	for tableName, items := range tables.(map[string]interface{}) {
 	}
 }
