@@ -39,7 +39,7 @@ tables:
 	--network=dynamornr-test \
 	dynamornr \
 	/bin/ash \
-	-c "cd test && TABLENAME=users dynamornr tables:create"
+	-c "cd test && dynamornr tables:create"
 list-items:
 	make compile \
 	&& docker run \

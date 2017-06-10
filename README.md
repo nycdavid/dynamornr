@@ -6,6 +6,8 @@ It leverages the Golang aws-sdk-go library in order to execute it's tasks and wa
 ## Commands:
 * `dynamornr tables:list` List the current tables in the running DynamoDB database.
 * `dynamornr tables:create` Create tables (according to a `schema.yml` file).
+* `dynamornr items:list [TABLENAME]` List items belonging in the `TABLENAME` table.
+* `dynamornr items:seed` Seeds items to tables according to the [config/seeds.json file](https://github.com/nycdavid/dynamornr/blob/master/test/config/seeds.json)
 
 ## Configuration Files
 There are 2 main configuration Yaml files that Dynamornr looks for:
