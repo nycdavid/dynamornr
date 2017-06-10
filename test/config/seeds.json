@@ -1,6 +1,6 @@
 {
   "users": [
-    { "email": "david@ko.com" },
-    { "email": "jane@ko.com" }
+    { "Id": "foobar", "Email": "david@ko.com" },
+    { "Id": "barfoo", "Email": "jane@ko.com" }
   ]
 }

@@ -43,34 +43,39 @@ func Seed(ddbSess *dynamodb.DynamoDB, ctx *cli.Context) {
 	var sf SeedFile
 	json.NewDecoder(fileContent).Decode(&sf.Tables)
 	input := constructBatchWriteInput(sf.Tables)
-	ddbSess.BatchWriteItem(input)
+	bwo, err := ddbSess.BatchWriteItem(input)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	fmt.Println(bwo)
 }
 
 func constructBatchWriteInput(tables interface{}) *dynamodb.BatchWriteItemInput {
-  var reqItems map[string][]*dynamodb.WriteRequest
+	reqItems := make(map[string][]*dynamodb.WriteRequest)
 	for tableName, items := range tables.(map[string]interface{}) {
-    reqItems[tableName] = mapItemsToWriteRequests(items)
+		reqItems[tableName] = mapItemsToWriteRequests(items)
 	}
-  return &dynamodb.BatchWriteItemInput{
-    RequestItems: map[string][]*dynamodb.WriteRequest{
-    }
-  }
+	return &dynamodb.BatchWriteItemInput{
+		RequestItems: reqItems,
+	}
 }
 
-func mapItemsToWriteRequest(items interface{}) []*dynamodb.WriteRequest {
-  var writeReqs []*dynamodb.WriteRequest
-  for _, item := range items.([]map[string]string) {
-    writeReqs = append(writeReqs, &dynamodb.WriteRequest{
-      PutRequest: &dynamodb.PutRequest{
-        Item: mapItemToAttributeValues(item)
-      }
-    })
-  }
+func mapItemsToWriteRequests(items interface{}) []*dynamodb.WriteRequest {
+	var writeReqs []*dynamodb.WriteRequest
+	for _, item := range items.([]interface{}) {
+		writeReqs = append(writeReqs, &dynamodb.WriteRequest{
+			PutRequest: &dynamodb.PutRequest{
+				Item: mapItemToAttributeValues(item.(map[string]interface{})),
+			},
+		})
+	}
+	return writeReqs
 }
 
-func mapItemToAttributeValues(item map[string]string) map[string]*dynamodb.AttributeValue{
-  var attrValues := map[string]*dynamodb.AttributeValue
-  for k, v := range item {
-    // attrValues[k] =
-  }
+func mapItemToAttributeValues(item map[string]interface{}) map[string]*dynamodb.AttributeValue {
+	attrValues := make(map[string]*dynamodb.AttributeValue)
+	for k, v := range item {
+		attrValues[k] = &dynamodb.AttributeValue{S: aws.String(v.(string))}
+	}
+	return attrValues
 }
