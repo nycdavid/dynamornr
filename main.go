@@ -20,6 +20,13 @@ var sess *dynamodb.DynamoDB
 
 func main() {
 	app := cli.NewApp()
+	app.Flags = []cli.Flag{
+		cli.StringFlag{
+			Name:  "config",
+			Value: "./test/config/",
+			Usage: "Load configuration from `CPATH`",
+		},
+	}
 	app.Commands = []cli.Command{
 		{
 			Name:   "tables:list",
@@ -42,8 +49,9 @@ func main() {
 			Action: SeedItems,
 		},
 	}
+
 	dbyml := make(map[interface{}]interface{})
-	fpath, err := filepath.Abs("./config/database.yml")
+	fpath, err := filepath.Abs("./alternate_folder/database.yml")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -72,6 +80,8 @@ func ListTables(ctx *cli.Context) {
 }
 
 func CreateTable(ctx *cli.Context) {
+	fmt.Println("CreateTable")
+	fmt.Println(ctx.String("config"))
 	tables.Create(sess)
 }
 
