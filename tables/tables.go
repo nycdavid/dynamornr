@@ -8,6 +8,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/urfave/cli"
 	"gopkg.in/yaml.v2"
 )
 
@@ -47,9 +48,9 @@ type TblMetadata struct {
 	ProvisionedThroughput ProvisionedThroughput `yaml:"provisioned_throughput"`
 }
 
-func Create(ddbSess *dynamodb.DynamoDB) {
+func Create(ddbSess *dynamodb.DynamoDB, ctx *cli.Context) {
 	schema := Schema{}
-	unmarshalSchemaTo(&schema)
+	unmarshalSchemaTo(&schema, ctx)
 	for _, table := range schema.Tables {
 		createTableInput := constructCti(table)
 		cto, err := ddbSess.CreateTable(createTableInput)
@@ -61,14 +62,18 @@ func Create(ddbSess *dynamodb.DynamoDB) {
 	}
 }
 
-func unmarshalSchemaTo(schema *Schema) {
+func unmarshalSchemaTo(schema *Schema, ctx *cli.Context) {
 	fpath, err := filepath.Abs("./config/schema.yml")
+
 	if err != nil {
 		log.Fatal(err)
 	}
 	fileContent, err := ioutil.ReadFile(fpath)
 	if err != nil {
-		log.Fatal(err)
+		str := fmt.Sprintf("ioutil.ReadFile error: %s", err.Error())
+		log.Print(str)
+		fmt.Println(ctx.String("config"))
+		fileContent, _ = ioutil.ReadFile(fmt.Sprintf("%s/schema.yml", ctx.String("config")))
 	}
 	err = yaml.Unmarshal(fileContent, &schema)
 	if err != nil {

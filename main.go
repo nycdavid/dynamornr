@@ -20,13 +20,6 @@ var sess *dynamodb.DynamoDB
 
 func main() {
 	app := cli.NewApp()
-	app.Flags = []cli.Flag{
-		cli.StringFlag{
-			Name:  "config",
-			Value: "./test/config/",
-			Usage: "Load configuration from `CPATH`",
-		},
-	}
 	app.Commands = []cli.Command{
 		{
 			Name:   "tables:list",
@@ -37,6 +30,11 @@ func main() {
 			Name:   "tables:create",
 			Usage:  "Create a table.",
 			Action: CreateTable,
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name: "config, c",
+				},
+			},
 		},
 		{
 			Name:   "items:list",
@@ -80,9 +78,7 @@ func ListTables(ctx *cli.Context) {
 }
 
 func CreateTable(ctx *cli.Context) {
-	fmt.Println("CreateTable")
-	fmt.Println(ctx.String("config"))
-	tables.Create(sess)
+	tables.Create(sess, ctx)
 }
 
 func ListItems(ctx *cli.Context) {
