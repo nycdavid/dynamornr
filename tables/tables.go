@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"path/filepath"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
@@ -63,16 +62,10 @@ func Create(ddbSess *dynamodb.DynamoDB, ctx *cli.Context) {
 }
 
 func unmarshalSchemaTo(schema *Schema, ctx *cli.Context) {
-	fpath, err := filepath.Abs("./config/schema.yml")
-
-	if err != nil {
-		log.Fatal(err)
-	}
+	fpath := fmt.Sprintf("%s/schema.yml", ctx.String("config"))
 	fileContent, err := ioutil.ReadFile(fpath)
 	if err != nil {
 		str := fmt.Sprintf("ioutil.ReadFile error: %s", err.Error())
-		log.Print(str)
-		fmt.Println(ctx.String("config"))
 		fileContent, _ = ioutil.ReadFile(fmt.Sprintf("%s/schema.yml", ctx.String("config")))
 	}
 	err = yaml.Unmarshal(fileContent, &schema)

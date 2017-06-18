@@ -39,7 +39,7 @@ tables:
 	--network=dynamornr-test \
 	dynamornr \
 	/bin/ash \
-	-c "cd test && dynamornr tables:create --config ${shell pwd}/test/alternate_folder/"
+	-c "cd test && dynamornr tables:create --config ./test/alternate_folder/"
 list-items:
 	make compile \
 	&& docker run \
