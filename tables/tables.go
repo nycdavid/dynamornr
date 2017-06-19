@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
@@ -62,16 +63,28 @@ func Create(ddbSess *dynamodb.DynamoDB, ctx *cli.Context) {
 }
 
 func unmarshalSchemaTo(schema *Schema, ctx *cli.Context) {
-	fpath := fmt.Sprintf("%s/schema.yml", ctx.String("config"))
-	fileContent, err := ioutil.ReadFile(fpath)
+	configPath := parseConfigPath(ctx)
+	schemaPath := fmt.Sprintf("%s/schema.yml", configPath)
+	fileContent, err := ioutil.ReadFile(schemaPath)
 	if err != nil {
-		str := fmt.Sprintf("ioutil.ReadFile error: %s", err.Error())
-		fileContent, _ = ioutil.ReadFile(fmt.Sprintf("%s/schema.yml", ctx.String("config")))
+		log.Fatal(err.Error())
 	}
 	err = yaml.Unmarshal(fileContent, &schema)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(err.Error())
 	}
+}
+
+func parseConfigPath(ctx *cli.Context) string {
+	if ctx.String("config") == "" {
+		return "config"
+	}
+	projectDir, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	path := fmt.Sprintf("%s/%s", projectDir, ctx.String("config"))
+	return path
 }
 
 func constructCti(table TblMetadata) *dynamodb.CreateTableInput {

@@ -25,7 +25,7 @@ dynamo:
 	--rm \
 	--name ddb \
 	--network=dynamornr-test \
-	peopleperhour/dynamodb
+	instructure/dynamodb
 tables:
 	make compile \
 	&& docker run \
@@ -39,7 +39,7 @@ tables:
 	--network=dynamornr-test \
 	dynamornr \
 	/bin/ash \
-	-c "cd test && dynamornr tables:create --config ./test/alternate_folder/"
+	-c "cd test && dynamornr tables:create --config alternate_folder"
 list-items:
 	make compile \
 	&& docker run \
