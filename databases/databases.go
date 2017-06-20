@@ -1,16 +1,19 @@
 package databases
 
-import ()
+import (
+	"path/filepath"
+
+	"github.com/urfave/cli"
+)
 
 type Database struct {
-	configPath string
-	Session    *dynamodb.DynamoDB
+	Session *dynamodb.DynamoDB
 }
 
-func NewDatabase(configPath string) *Database {
-	dbYml := make(map[interface{}]interface{})
+func NewDatabase(ctx *cli.Context) *Database {
+	dbyml := newDatabaseYml(ctx)
 	return &Database{
-		configPath: configPath,
+		Sessions: connectTo(dbyml.url()),
 	}
 }
 

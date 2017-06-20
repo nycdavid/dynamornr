@@ -12,11 +12,10 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/nycdavid/dynamornr/items"
 	"github.com/nycdavid/dynamornr/tables"
+	"github.com/nycdavid/dynamornr/databases"
 	"github.com/urfave/cli"
 	"gopkg.in/yaml.v2"
 )
-
-var sess *dynamodb.DynamoDB
 
 func main() {
 	app := cli.NewApp()
@@ -25,6 +24,11 @@ func main() {
 			Name:   "tables:list",
 			Usage:  "List all tables.",
 			Action: ListTables,
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name: "config, c",
+				}
+			},
 		},
 		{
 			Name:   "tables:create",
@@ -40,24 +44,28 @@ func main() {
 			Name:   "items:list",
 			Usage:  "List all items in a given table.",
 			Action: ListItems,
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name: "config, c",
+				}
+			},
 		},
 		{
 			Name:   "items:seed",
 			Usage:  "Seeds items into DynamoDB.",
 			Action: SeedItems,
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name: "config, c",
+				},
+			},
 		},
 	}
 
-	dbyml := make(map[interface{}]interface{})
-	fpath, err := filepath.Abs("./alternate_folder/database.yml")
-	if err != nil {
-		log.Fatal(err)
-	}
 	file, err := ioutil.ReadFile(fpath)
 	if err != nil {
 		log.Fatal(err)
 	}
-	env := os.Getenv("ENV")
 	yaml.Unmarshal(file, &dbyml)
 	envConfigs := dbyml[env].(map[interface{}]interface{})
 	dbUrl := fmt.Sprintf("%s:%v", envConfigs["host"], envConfigs["port"])
@@ -74,30 +82,21 @@ func main() {
 }
 
 func ListTables(ctx *cli.Context) {
-	tables.All(sess)
+	database := databases.NewDatabase(ctx.String("config"))
+	tables.All(database.Session)
 }
 
 func CreateTable(ctx *cli.Context) {
-	tables.Create(sess, ctx)
+	database := databases.NewDatabase(ctx.String("config"))
+	tables.Create(database.Session, ctx)
 }
 
 func ListItems(ctx *cli.Context) {
-	items.List(sess, ctx)
+	database := databases.NewDatabase(ctx.String("config"))
+	items.List(database.Session, ctx)
 }
 
 func SeedItems(ctx *cli.Context) {
-	items.Seed(sess, ctx)
-}
-
-func connectTo(url string) (*dynamodb.DynamoDB, error) {
-	awsSession, err := session.NewSession(&aws.Config{
-		Endpoint: aws.String(url),
-		Region:   aws.String("us-east-1"),
-	})
-	if err != nil {
-		log.Fatal(err)
-		return &dynamodb.DynamoDB{}, err
-	}
-	sess = dynamodb.New(awsSession)
-	return sess, nil
+	database := databases.NewDatabase(ctx.String("config"))
+	items.Seed(database.Session, ctx)
 }
