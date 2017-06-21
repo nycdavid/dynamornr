@@ -5,17 +5,18 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/urfave/cli"
 	"gopkg.in/yaml.v2"
 )
 
 type databaseYml struct {
-	env   string
-	fpath string
+	env         string
+	fileContent []byte
 }
 
-func newDatabaseYml(ctx *cli.Context) *DatabaseYml {
+func newDatabaseYml(ctx *cli.Context) *databaseYml {
 	configPath := parseConfigPath(ctx)
 	fpath := filepath.Join(configPath, "database.yml")
 	return &databaseYml{
@@ -31,7 +32,7 @@ func (dbyml *databaseYml) url() string {
 	return fmt.Sprintf("%s:%v", envConfigs["host"], envConfigs["port"])
 }
 
-func fileContents(path) []byte {
+func fileContents(path string) []byte {
 	content, err := ioutil.ReadFile(path)
 	if err != nil {
 		log.Fatal(err.Error())

@@ -1,8 +1,11 @@
 package databases
 
 import (
-	"path/filepath"
+	"log"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/urfave/cli"
 )
 
@@ -12,8 +15,12 @@ type Database struct {
 
 func NewDatabase(ctx *cli.Context) *Database {
 	dbyml := newDatabaseYml(ctx)
+	sess, err := connectTo(dbyml.url())
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 	return &Database{
-		Sessions: connectTo(dbyml.url()),
+		Session: sess,
 	}
 }
 
@@ -26,6 +33,5 @@ func connectTo(url string) (*dynamodb.DynamoDB, error) {
 		log.Fatal(err)
 		return &dynamodb.DynamoDB{}, err
 	}
-	sess = dynamodb.New(awsSession)
-	return sess, nil
+	return dynamodb.New(awsSession), nil
 }
