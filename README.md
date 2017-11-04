@@ -1,3 +1,5 @@
+#### This is no longer supported.
+
 # Dynamornr
 Dynamornr is a CLI-based task runner for DynamoDB (written in Go).
 
